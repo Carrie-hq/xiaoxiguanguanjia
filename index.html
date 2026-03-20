@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小习惯管家</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- 今日任务首页 -->
+        <div id="home-page" class="page active">
+            <!-- Header -->
+            <div class="top-nav">
+                <div class="app-title">
+                    <span class="app-icon">🧚</span>
+                    <span class="app-name">小习惯管家</span>
+                </div>
+                <div class="nav-actions">
+                    <button class="icon-btn settings-btn" onclick="showPage('settings-page')" title="设置">⚙️</button>
+                    <div class="star-count" onclick="showPage('achievement-page')" title="我的成就">
+                        <span>⭐</span>
+                        <span id="total-stars">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 欢迎卡片 -->
+            <div class="welcome-card">
+                <div class="welcome-text">
+                    <p class="greeting">嗨，宝贝！</p>
+                    <p class="task-summary">今天要完成 <span id="today-task-count">0</span> 个任务哦～</p>
+                </div>
+                <button class="add-task-btn" onclick="showPage('task-edit-page')">
+                    <span class="btn-icon">+</span>
+                    <span>添加任务</span>
+                </button>
+            </div>
+
+            <!-- 今日任务列表 -->
+            <div class="task-list-container">
+                <h3 class="section-title">📋 今日任务</h3>
+                <div id="task-list" class="task-list">
+                    <!-- 任务卡片通过JS动态生成 -->
+                </div>
+                <!-- 空状态 -->
+                <div id="empty-state" class="empty-state hidden">
+                    <div class="empty-illustration">👧</div>
+                    <p>暂无任务，点击添加开始养成好习惯～</p>
+                </div>
+            </div>
+
+            <!-- 成就预览 -->
+            <div class="achievement-preview">
+                <h3 class="section-title">🏆 我的成就</h3>
+                <div class="achievement-stats">
+                    <div class="stat-item">
+                        <span class="stat-icon">📅</span>
+                        <span class="stat-label">连续打卡</span>
+                        <span class="stat-value"><span id="streak-days">0</span>天</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">✅</span>
+                        <span class="stat-label">已完成</span>
+                        <span class="stat-value"><span id="completed-tasks">0</span>个</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">⭐</span>
+                        <span class="stat-label">获得星星</span>
+                        <span class="stat-value"><span id="earned-stars">0</span>颗</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="text-align: center; padding: var(--spacing-md); color: var(--text-secondary); font-size: 0.85rem; margin-top: var(--spacing-lg);">
+                按时完成任务可以获得小星星哦✨
+            </div>
+        </div>
+
+        <!-- 添加/编辑任务页 -->
+        <div id="task-edit-page" class="page">
+            <!-- Header -->
+            <div class="page-header">
+                <button class="back-btn" onclick="showPage('home-page')">← 返回</button>
+                <h2 id="edit-page-title">添加新任务</h2>
+                <div class="placeholder"></div>
+            </div>
+
+            <div class="edit-form">
+                <!-- 任务信息 -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <span class="section-icon">📝</span>
+                        <span>任务信息</span>
+                    </div>
+                    <div class="form-group">
+                        <label>任务名称</label>
+                        <input type="text" id="task-name" placeholder="请输入任务名称（收拾玩具 / 准备书包等）" class="cute-input">
+                    </div>
+                    <div class="form-group">
+                        <label>选择图标</label>
+                        <div class="icon-selector">
+                            <div class="icon-option selected" data-icon="🎒">🎒</div>
+                            <div class="icon-option" data-icon="📚">📚</div>
+                            <div class="icon-option" data-icon="🧸">🧸</div>
+                            <div class="icon-option" data-icon="🎨">🎨</div>
+                            <div class="icon-option" data-icon="🎹">🎹</div>
+                            <div class="icon-option" data-icon="🧹">🧹</div>
+                            <div class="icon-option" data-icon="🛁">🛁</div>
+                            <div class="icon-option" data-icon="🛏️">🛏️</div>
+                        </div>
+                    </div>
+                    <div class="form-group time-group">
+                        <label>开始时间</label>
+                        <input type="time" id="start-time" class="cute-input time-input" value="19:00">
+                    </div>
+                    <div class="form-group time-group">
+                        <label>结束时间</label>
+                        <input type="time" id="end-time" class="cute-input time-input" value="19:20">
+                    </div>
+                </div>
+
+                <!-- 语音提醒设置 -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <span class="section-icon">🔊</span>
+                        <span>语音提醒设置</span>
+                    </div>
+                    <div style="background: #FFF3E0; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 0.85rem; color: #E65100;">
+                        💡 提示：浏览器语音功能依赖系统内置语音，不同设备支持的声音数量不同。Windows/Mac通常有2-4种中文声音可选。
+                    </div>
+                    <div class="form-group">
+                        <label>提醒声音</label>
+                        <button class="setting-btn" onclick="showVoiceSelector()" style="margin-bottom: 0;">
+                            <span id="selected-voice-display">选择语音角色</span>
+                        </button>
+                    </div>
+                    
+                    <!-- 自定义录音区域 -->
+                    <div style="font-weight: 700; color: var(--primary-color); margin: 16px 0 8px 0; font-size: 0.9rem;">🎙️ 自定义录音</div>
+                    <div class="custom-recording-section" style="background: #F5F5F5; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                        <div class="recording-input-group" style="margin-bottom: 12px;">
+                            <label style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px; display: block;">录音提示词：</label>
+                            <input type="text" id="recording-prompt" placeholder="比如：该起床啦、该写作业了" class="cute-input" style="margin-bottom: 8px;">
+                        </div>
+                        <div class="recording-controls" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="recording-btn" id="start-record-btn" onclick="startRecording()" style="flex: 1; min-width: 80px; padding: 10px; background: linear-gradient(135deg, #FF6B6B, #FF8E8E); color: white; border: none; border-radius: 20px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                <span>🎙️</span>
+                                <span>开始录音</span>
+                            </button>
+                            <button class="recording-btn" id="stop-record-btn" onclick="stopRecording()" style="flex: 1; min-width: 80px; padding: 10px; background: linear-gradient(135deg, #666, #888); color: white; border: none; border-radius: 20px; font-size: 0.9rem; cursor: pointer; display: none; align-items: center; justify-content: center; gap: 4px;">
+                                <span>⏹️</span>
+                                <span>停止录音</span>
+                            </button>
+                            <button class="recording-btn" id="play-record-btn" onclick="playRecording()" style="flex: 1; min-width: 80px; padding: 10px; background: linear-gradient(135deg, #4CAF50, #66BB6A); color: white; border: none; border-radius: 20px; font-size: 0.9rem; cursor: pointer; display: none; align-items: center; justify-content: center; gap: 4px;">
+                                <span>▶️</span>
+                                <span>播放</span>
+                            </button>
+                            <button class="recording-btn" id="save-record-btn" onclick="saveRecording()" style="flex: 1; min-width: 80px; padding: 10px; background: linear-gradient(135deg, #2196F3, #42A5F5); color: white; border: none; border-radius: 20px; font-size: 0.9rem; cursor: pointer; display: none; align-items: center; justify-content: center; gap: 4px;">
+                                <span>💾</span>
+                                <span>保存</span>
+                            </button>
+                        </div>
+                        <div id="recording-status" style="margin-top: 8px; font-size: 0.85rem; color: #666; text-align: center; display: none;">
+                            <span class="recording-indicator" style="display: inline-block; width: 8px; height: 8px; background: #FF6B6B; border-radius: 50%; margin-right: 6px; animation: pulse 1s infinite;"></span>
+                            正在录音...
+                        </div>
+                        <div id="recording-timer" style="margin-top: 4px; font-size: 0.9rem; color: #FF6B6B; text-align: center; font-weight: bold; display: none;">
+                            00:00
+                        </div>
+                    </div>
+                    
+                    <!-- 已保存的录音列表 -->
+                    <div id="saved-recordings-section" style="margin-bottom: 16px;">
+                        <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 8px; font-size: 0.9rem;">📁 我的录音</div>
+                        <div id="saved-recordings-list" style="display: flex; flex-direction: column; gap: 8px;">
+                            <!-- 动态生成录音列表 -->
+                        </div>
+                    </div>
+                    
+                    <div style="font-weight: 700; color: var(--primary-color); margin-bottom: 8px; font-size: 0.9rem;">🎵 克隆语音（本地音频）</div>
+                    <div class="voice-options" id="voice-options-list">
+                        <div class="voice-option selected" data-voice="labixiaoxin">
+                            <div class="voice-avatar">👦</div>
+                            <div class="voice-info">
+                                <span class="voice-name">蜡笔小新</span>
+                                <span class="voice-desc">调皮可爱 · 经典童声</span>
+                            </div>
+                        </div>
+                        <div class="voice-option" data-voice="xiaowanzi">
+                            <div class="voice-avatar">👧</div>
+                            <div class="voice-info">
+                                <span class="voice-name">樱桃小丸子</span>
+                                <span class="voice-desc">呆萌可爱 · 经典童声</span>
+                            </div>
+                        </div>
+                        <div class="voice-option" data-voice="nezha">
+                            <div class="voice-avatar">👶</div>
+                            <div class="voice-info">
+                                <span class="voice-name">哪吒</span>
+                                <span class="voice-desc">酷酷的少年音</span>
+                            </div>
+                        </div>
+                        <div class="voice-option" data-voice="xiaodaji">
+                            <div class="voice-avatar">🦊</div>
+                            <div class="voice-info">
+                                <span class="voice-name">动漫小妲己</span>
+                                <span class="voice-desc">甜美可爱 · 动漫风</span>
+                            </div>
+                        </div>
+                        <div class="voice-option" data-voice="ertong">
+                            <div class="voice-avatar">🧒</div>
+                            <div class="voice-info">
+                                <span class="voice-name">儿童</span>
+                                <span class="voice-desc">天真活泼 · 童声</span>
+                            </div>
+                        </div>
+                        <div class="voice-option" data-voice="manbo">
+                            <div class="voice-avatar">🎵</div>
+                            <div class="voice-info">
+                                <span class="voice-name">曼波女声</span>
+                                <span class="voice-desc">温柔动听 · 曼波风格</span>
+                            </div>
+                        </div>
+                        <div class="voice-option" data-voice="tvb">
+                            <div class="voice-avatar">📺</div>
+                            <div class="voice-info">
+                                <span class="voice-name">TVB女声</span>
+                                <span class="voice-desc">港剧风格 · 经典配音</span>
+                            </div>
+                        </div>
+                        <div class="voice-option" data-voice="xiaohaixiezuoye">
+                            <div class="voice-avatar">✏️</div>
+                            <div class="voice-info">
+                                <span class="voice-name">小孩</span>
+                                <span class="voice-desc">活泼可爱 · 写作业提醒</span>
+                            </div>
+                        </div>
+                        <div class="voice-option" data-voice="shimengyundong">
+                            <div class="voice-avatar">🏃</div>
+                            <div class="voice-info">
+                                <span class="voice-name">诗萌</span>
+                                <span class="voice-desc">元气满满 · 运动提醒</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>自定义提醒语</label>
+                        <input type="text" id="voice-content" placeholder="比如：宝贝，该收拾玩具啦～" class="cute-input">
+                    </div>
+                    <button class="preview-voice-btn" onclick="previewVoice()">
+                        <span>🔊</span>
+                        <span>预览语音</span>
+                    </button>
+                </div>
+
+                <!-- 倒计时提醒 -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <span class="section-icon">⏰</span>
+                        <span>倒计时提醒</span>
+                    </div>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="enable-countdown" class="cute-checkbox">
+                        <span class="checkmark"></span>
+                        <span>任务结束前开启倒计时提醒</span>
+                    </label>
+                    <div id="countdown-options" class="countdown-options hidden">
+                        <label style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px; display: block;">倒计时时长：</label>
+                        <label class="radio-label">
+                            <input type="radio" name="countdown-time" value="1" class="cute-radio">
+                            <span class="radio-mark"></span>
+                            <span>1 分钟</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="countdown-time" value="3" class="cute-radio" checked>
+                            <span class="radio-mark"></span>
+                            <span>3 分钟</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="countdown-time" value="5" class="cute-radio">
+                            <span class="radio-mark"></span>
+                            <span>5 分钟</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ButtonGroup -->
+            <div class="form-actions">
+                <button class="cancel-btn" onclick="showPage('home-page')">取消</button>
+                <button class="save-btn" onclick="saveTask()">
+                    <span id="save-btn-text">保存任务</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 语音预览弹窗 (Popup) -->
+        <div id="voice-preview-modal" class="modal">
+            <div class="modal-content voice-preview-content">
+                <!-- Title -->
+                <h3 style="margin-bottom: var(--spacing-md); color: var(--text-primary);">语音预览</h3>
+                
+                <div class="voice-preview-header">
+                    <div class="voice-avatar-large" id="preview-avatar">👸</div>
+                    <span class="voice-preview-name" id="preview-name">小公主</span>
+                </div>
+                <div class="voice-preview-text" id="preview-text">
+                    宝贝，该收拾玩具啦～
+                </div>
+                
+                <!-- Button: 播放克隆语音 -->
+                <button class="play-btn" id="play-voice-btn" onclick="playCurrentCloneVoice()">
+                    <span id="play-icon">▶️</span>
+                </button>
+                
+                <div style="background: #E3F2FD; padding: 10px; border-radius: 8px; margin: 16px 0; font-size: 0.85rem; color: #1565C0;">
+                    🎵 上方显示的是自定义提醒语，播放的是克隆音频（固定内容）
+                </div>
+                
+                <!-- Button: 关闭 -->
+                <button class="cancel-btn" onclick="closeModal('voice-preview-modal')" style="width: 100%; margin-top: var(--spacing-md);">关闭</button>
+            </div>
+        </div>
+
+        <!-- 倒计时提醒页 (PopupFull) -->
+        <div id="countdown-page" class="page countdown-page">
+            <div class="countdown-container">
+                <!-- Title -->
+                <div style="font-size: 1.5rem; font-weight: 700; margin-bottom: var(--spacing-md);">任务即将结束！</div>
+                
+                <!-- LargeText: 倒计时 -->
+                <div class="countdown-display">
+                    <span id="countdown-minutes">05</span>
+                    <span class="countdown-separator">:</span>
+                    <span id="countdown-seconds">00</span>
+                </div>
+                
+                <!-- SubTitle: 任务名称 -->
+                <div class="countdown-task-name" id="countdown-task-name">任务：收拾玩具</div>
+                
+                <div class="countdown-actions">
+                    <!-- Button: 知道了，马上完成 -->
+                    <button class="countdown-btn primary" onclick="markTaskInProgress()">
+                        <span>💪</span>
+                        <span>知道了，马上完成</span>
+                    </button>
+                    <!-- Button: 稍后提醒 -->
+                    <button class="countdown-btn secondary" onclick="minimizeCountdown()">稍后提醒</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 悬浮倒计时 -->
+        <div id="floating-countdown" class="floating-countdown hidden" onclick="showPage('countdown-page')">
+            <span class="floating-icon">⏰</span>
+            <span id="floating-time">03:00</span>
+        </div>
+
+        <!-- 成就页 -->
+        <div id="achievement-page" class="page">
+            <!-- Header -->
+            <div class="page-header">
+                <button class="back-btn" onclick="showPage('home-page')">← 返回</button>
+                <h2>我的小成就</h2>
+                <div class="placeholder"></div>
+            </div>
+
+            <!-- 星星总数 -->
+            <div class="achievement-summary">
+                <div class="stars-total">
+                    <div class="star-animation">⭐</div>
+                    <div class="stars-info">
+                        <span class="stars-number" id="achievement-stars">0</span>
+                        <span class="stars-label">颗星星</span>
+                    </div>
+                </div>
+                <div class="streak-display">
+                    <span class="streak-icon">📅</span>
+                    <span class="streak-text">连续打卡 <span id="achievement-streak">0</span> 天</span>
+                </div>
+            </div>
+
+            <!-- 成就徽章 -->
+            <div class="badges-section">
+                <h3 class="section-title">🏅 成就徽章</h3>
+                <div class="badges-grid">
+                    <div class="badge-item earned">
+                        <div class="badge-icon">🌟</div>
+                        <span class="badge-name">任务达人</span>
+                        <span class="badge-desc">完成第一个任务</span>
+                    </div>
+                    <div class="badge-item earned">
+                        <div class="badge-icon">📅</div>
+                        <span class="badge-name">打卡小能手</span>
+                        <span class="badge-desc">连续打卡3天</span>
+                    </div>
+                    <div class="badge-item earned">
+                        <div class="badge-icon">⚡</div>
+                        <span class="badge-name">不拖拉小标兵</span>
+                        <span class="badge-desc">按时完成任务</span>
+                    </div>
+                    <div class="badge-item">
+                        <div class="badge-icon">🔒</div>
+                        <span class="badge-name">坚持小勇士</span>
+                        <span class="badge-desc">连续打卡7天</span>
+                    </div>
+                    <div class="badge-item">
+                        <div class="badge-icon">🔒</div>
+                        <span class="badge-name">任务大师</span>
+                        <span class="badge-desc">完成50个任务</span>
+                    </div>
+                    <div class="badge-item">
+                        <div class="badge-icon">🔒</div>
+                        <span class="badge-name">完美一周</span>
+                        <span class="badge-desc">连续7天完成任务</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 星星兑换 -->
+            <div class="rewards-section">
+                <h3 class="section-title">🎁 星星兑换</h3>
+                <div class="rewards-list">
+                    <div class="reward-item">
+                        <span class="reward-icon">🌸</span>
+                        <span class="reward-name">可爱贴纸</span>
+                        <span class="reward-cost">5⭐</span>
+                    </div>
+                    <div class="reward-item">
+                        <span class="reward-icon">🎨</span>
+                        <span class="reward-name">新主题颜色</span>
+                        <span class="reward-cost">10⭐</span>
+                    </div>
+                    <div class="reward-item">
+                        <span class="reward-icon">👑</span>
+                        <span class="reward-name">特殊头像框</span>
+                        <span class="reward-cost">20⭐</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设置页 -->
+        <div id="settings-page" class="page">
+            <!-- Header -->
+            <div class="page-header">
+                <button class="back-btn" onclick="showPage('home-page')">← 返回</button>
+                <h2>设置</h2>
+                <div class="placeholder"></div>
+            </div>
+
+            <!-- 主题颜色 -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <span class="section-icon">🎨</span>
+                    <span>主题颜色</span>
+                </div>
+                <div class="theme-options">
+                    <div class="theme-option selected" data-theme="pink" style="background: linear-gradient(135deg, #FFB6C1, #FF69B4)">
+                        <span class="theme-check">✓</span>
+                    </div>
+                    <div class="theme-option" data-theme="blue" style="background: linear-gradient(135deg, #87CEEB, #4169E1)">
+                        <span class="theme-check">✓</span>
+                    </div>
+                    <div class="theme-option" data-theme="yellow" style="background: linear-gradient(135deg, #FFE4B5, #FFA500)">
+                        <span class="theme-check">✓</span>
+                    </div>
+                    <div class="theme-option" data-theme="green" style="background: linear-gradient(135deg, #98FB98, #32CD32)">
+                        <span class="theme-check">✓</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 语音总开关 -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <span class="section-icon">🔔</span>
+                    <span>语音总开关</span>
+                </div>
+                <label class="toggle-label">
+                    <span>开启语音提醒</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="voice-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+
+            <!-- 通知提醒 -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <span class="section-icon">📢</span>
+                    <span>通知提醒</span>
+                </div>
+                <label class="toggle-label">
+                    <span>开启音效</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="sound-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+                <label class="toggle-label">
+                    <span>开启悬浮通知</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="notification-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+
+            <!-- 重置今日任务 -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <span class="section-icon">�</span>
+                    <span>重置今日任务</span>
+                </div>
+                <button class="setting-btn danger" onclick="resetData()">重置</button>
+            </div>
+
+            <!-- 关于小习惯管家 -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <span class="section-icon">❓</span>
+                    <span>关于小习惯管家</span>
+                </div>
+                <div class="help-item">
+                    <span class="help-icon">📝</span>
+                    <div class="help-content">
+                        <span class="help-title">如何添加任务？</span>
+                        <span class="help-desc">点击首页的"添加任务"按钮，填写任务信息即可</span>
+                    </div>
+                </div>
+                <div class="help-item">
+                    <span class="help-icon">🔊</span>
+                    <div class="help-content">
+                        <span class="help-title">语音没声音怎么办？</span>
+                        <span class="help-desc">请检查设备音量，并确保语音提醒开关已打开</span>
+                    </div>
+                </div>
+                <div style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid rgba(0,0,0,0.05); text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+                    帮助小朋友养成不拖拉的好习惯
+                </div>
+            </div>
+        </div>
+
+        <!-- 确认弹窗 -->
+        <div id="confirm-modal" class="modal">
+            <div class="modal-content confirm-content">
+                <div class="confirm-icon">⚠️</div>
+                <p class="confirm-text">确定要重置今日任务吗？</p>
+                <div class="confirm-actions">
+                    <button class="confirm-btn cancel" onclick="closeModal('confirm-modal')">取消</button>
+                    <button class="confirm-btn confirm" onclick="confirmReset()">确定</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 任务完成奖励 (Popup) -->
+        <div id="star-reward" class="star-reward hidden" onclick="this.classList.add('hidden')">
+            <!-- Icon -->
+            <div style="font-size: 4rem; margin-bottom: var(--spacing-md);">✨⭐✨</div>
+            <!-- Title -->
+            <div class="reward-text">太棒啦！任务完成</div>
+            <!-- Text -->
+            <div class="reward-subtext">获得 1 颗星星</div>
+            <!-- ButtonPrimary: 返回首页 -->
+            <button class="save-btn" onclick="document.getElementById('star-reward').classList.add('hidden')" style="margin-top: var(--spacing-xl); min-width: 200px;">
+                返回首页
+            </button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
