@@ -1,7 +1,32 @@
 /**
  * 小习惯管家 - 儿童任务管理APP
  * 主要功能：任务管理、语音提醒、倒计时、成就系统
+ * PWA支持：离线使用、添加到主屏幕、推送通知
  */
+
+// ========================================
+// PWA - Service Worker 注册
+// ========================================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then((registration) => {
+                console.log('Service Worker 注册成功:', registration.scope);
+                
+                // 请求通知权限
+                if ('Notification' in window) {
+                    Notification.requestPermission().then((permission) => {
+                        if (permission === 'granted') {
+                            console.log('通知权限已获取');
+                        }
+                    });
+                }
+            })
+            .catch((error) => {
+                console.log('Service Worker 注册失败:', error);
+            });
+    });
+}
 
 // ========================================
 // 全局状态管理
